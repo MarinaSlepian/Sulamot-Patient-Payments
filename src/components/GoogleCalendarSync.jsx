@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { X, Calendar, ChevronRight, AlertCircle, Loader } from 'lucide-react'
+import { X, Calendar, AlertCircle, Loader, Trash2 } from 'lucide-react'
 import { useStoreContext } from '../context/StoreContext'
 import { storage } from '../utils/storage'
 import { format, startOfWeek, endOfWeek, addWeeks } from 'date-fns'
@@ -15,7 +15,7 @@ function getWeekRange(offset = 0) {
 }
 
 export default function GoogleCalendarSync({ onClose }) {
-  const { patients, sessions, addSessionsBatch } = useStoreContext()
+  const { patients, sessions, addSessionsBatch, deleteSessionsBatch } = useStoreContext()
   const [step, setStep] = useState('pick') // pick | loading | preview | done
   const [weekOffset, setWeekOffset] = useState(0)
   const [token, setToken] = useState(() => storage.getGoogleToken()?.access_token ?? null)
@@ -23,6 +23,7 @@ export default function GoogleCalendarSync({ onClose }) {
   const [selected, setSelected] = useState({})
   const [error, setError] = useState(null)
   const [importing, setImporting] = useState(false)
+  const [confirmClear, setConfirmClear] = useState(false)
 
   const { start, end } = getWeekRange(weekOffset)
 
@@ -94,6 +95,13 @@ export default function GoogleCalendarSync({ onClose }) {
       setError(err.message)
       setStep('pick')
     }
+  }
+
+  const sessionsInWeek = sessions.filter((s) => s.date >= start.toISOString().slice(0, 10) && s.date <= end.toISOString().slice(0, 10))
+
+  function handleClearWeek() {
+    deleteSessionsBatch(sessionsInWeek.map((s) => s.id))
+    setConfirmClear(false)
   }
 
   async function handleSync() {
@@ -184,6 +192,34 @@ export default function GoogleCalendarSync({ onClose }) {
               >
                 {token ? 'Fetch Events' : 'Sign in & Fetch Events'}
               </button>
+
+              <div className="border-t border-gray-100 pt-3">
+                {!confirmClear ? (
+                  <button
+                    onClick={() => setConfirmClear(true)}
+                    disabled={sessionsInWeek.length === 0}
+                    className="flex items-center gap-1.5 text-sm text-red-500 hover:text-red-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <Trash2 size={14} />
+                    Clear week
+                    {sessionsInWeek.length > 0 && <span className="text-red-400">({sessionsInWeek.length} session{sessionsInWeek.length !== 1 ? 's' : ''})</span>}
+                  </button>
+                ) : (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm">
+                    <p className="text-red-800 font-medium mb-2">
+                      Delete all {sessionsInWeek.length} session{sessionsInWeek.length !== 1 ? 's' : ''} for {format(start, 'MMM d')}–{format(end, 'MMM d')}?
+                    </p>
+                    <div className="flex gap-2">
+                      <button onClick={handleClearWeek} className="px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 text-xs font-medium">
+                        Yes, clear
+                      </button>
+                      <button onClick={() => setConfirmClear(false)} className="px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-gray-50 text-xs">
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
 
               {token && (
                 <button

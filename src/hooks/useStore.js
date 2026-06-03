@@ -79,6 +79,15 @@ export function useStore() {
     })
   }, [])
 
+  const deleteSessionsBatch = useCallback((ids) => {
+    const set = new Set(ids)
+    setSessions((prev) => {
+      const next = prev.filter((s) => !set.has(s.id))
+      storage.saveSessions(next)
+      return next
+    })
+  }, [])
+
   // --- payments ---
   const addPayment = useCallback((data) => {
     const p = { id: genId(), ...data }
@@ -149,6 +158,7 @@ export function useStore() {
     updateSession,
     deleteSession,
     addSessionsBatch,
+    deleteSessionsBatch,
     addPayment,
     updatePayment,
     deletePayment,
