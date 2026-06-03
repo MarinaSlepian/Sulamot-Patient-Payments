@@ -15,7 +15,7 @@ function getWeekRange(offset = 0) {
 }
 
 export default function GoogleCalendarSync({ onClose }) {
-  const { patients, addSessionsBatch } = useStoreContext()
+  const { patients, sessions, addSessionsBatch } = useStoreContext()
   const [step, setStep] = useState('pick') // pick | loading | preview | done
   const [weekOffset, setWeekOffset] = useState(0)
   const [token, setToken] = useState(() => storage.getGoogleToken()?.access_token ?? null)
@@ -76,18 +76,18 @@ export default function GoogleCalendarSync({ onClose }) {
           const escaped = p.name.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
           return new RegExp(`(?<![\\p{L}\\d])${escaped}(?![\\p{L}\\d])`, 'iu').test(title)
         })
-        return matchedPatients.map((p) => ({
-          eventId: ev.id,
-          patientId: p.id,
-          patientName: p.name,
-          title,
-          date: (ev.start?.date ?? ev.start?.dateTime ?? '').slice(0, 10),
-        }))
+        const date = (ev.start?.date ?? ev.start?.dateTime ?? '').slice(0, 10)
+        return matchedPatients.map((p) => {
+          const duplicate = sessions.some(
+            (s) => s.patientId === p.id && s.date === date
+          )
+          return { eventId: ev.id, patientId: p.id, patientName: p.name, title, date, duplicate }
+        })
       })
 
       setEvents(matched)
       const sel = {}
-      matched.forEach((_, i) => { sel[i] = true })
+      matched.forEach((ev, i) => { sel[i] = !ev.duplicate })
       setSelected(sel)
       setStep('preview')
     } catch (err) {
@@ -205,11 +205,17 @@ export default function GoogleCalendarSync({ onClose }) {
 
           {step === 'preview' && (
             <div className="space-y-3">
-              <p className="text-sm text-gray-600">
-                Found <strong>{events.length}</strong> matching event{events.length !== 1 ? 's' : ''} for{' '}
-                {format(start, 'MMM d')}–{format(end, 'MMM d')}.
-                Deselect any you don't want to import.
-              </p>
+              {(() => {
+                const newCount = events.filter((e) => !e.duplicate).length
+                const dupCount = events.filter((e) => e.duplicate).length
+                return (
+                  <p className="text-sm text-gray-600">
+                    Found <strong>{newCount} new</strong> event{newCount !== 1 ? 's' : ''}
+                    {dupCount > 0 && <> and <span className="text-amber-600 font-medium">{dupCount} already imported</span></>}
+                    {' '}for {format(start, 'MMM d')}–{format(end, 'MMM d')}.
+                  </p>
+                )
+              })()}
 
               {events.length === 0 ? (
                 <p className="text-sm text-gray-400 py-4 text-center">No events matched any patient names.</p>
@@ -219,7 +225,11 @@ export default function GoogleCalendarSync({ onClose }) {
                     <label
                       key={i}
                       className={`flex items-center gap-3 px-3 py-2.5 rounded-lg border cursor-pointer transition-colors ${
-                        selected[i] ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-200'
+                        ev.duplicate
+                          ? 'bg-gray-50 border-gray-200 opacity-60'
+                          : selected[i]
+                          ? 'bg-blue-50 border-blue-200'
+                          : 'bg-gray-50 border-gray-200'
                       }`}
                     >
                       <input
@@ -234,6 +244,11 @@ export default function GoogleCalendarSync({ onClose }) {
                           {ev.patientName} · {ev.date ? format(new Date(ev.date + 'T00:00:00'), 'MMM d, yyyy') : ev.date}
                         </p>
                       </div>
+                      {ev.duplicate && (
+                        <span className="shrink-0 text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5">
+                          Already imported
+                        </span>
+                      )}
                     </label>
                   ))}
                 </div>
