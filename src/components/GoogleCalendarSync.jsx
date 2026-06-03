@@ -57,8 +57,9 @@ export default function GoogleCalendarSync({ onClose }) {
         orderBy: 'startTime',
         maxResults: '100',
       })
+      const calendarId = encodeURIComponent(storage.getCalendarId())
       const resp = await fetch(
-        `https://www.googleapis.com/calendar/v3/calendars/primary/events?${params}`,
+        `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events?${params}`,
         { headers: { Authorization: `Bearer ${accessToken}` } }
       )
       if (resp.status === 401) {

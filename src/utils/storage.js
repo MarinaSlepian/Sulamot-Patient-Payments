@@ -3,6 +3,7 @@ const KEYS = {
   sessions: 'spp_sessions',
   payments: 'spp_payments',
   googleToken: 'spp_google_token',
+  calendarId: 'spp_calendar_id',
 }
 
 function load(key) {
@@ -38,6 +39,9 @@ export const storage = {
   },
   saveGoogleToken: (t) => localStorage.setItem(KEYS.googleToken, JSON.stringify(t)),
   clearGoogleToken: () => localStorage.removeItem(KEYS.googleToken),
+
+  getCalendarId: () => localStorage.getItem(KEYS.calendarId) ?? 'primary',
+  saveCalendarId: (id) => localStorage.setItem(KEYS.calendarId, id),
 
   exportAll() {
     return {
