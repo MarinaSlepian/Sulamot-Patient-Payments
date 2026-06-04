@@ -88,7 +88,7 @@ export default function Dashboard() {
         </div>
       ) : (
         <div className="space-y-2">
-          {rows.map(({ patient, score }) => {
+          {rows.map(({ patient, score }, index) => {
             const debt = hasDebt(score)
             return (
               <Link
@@ -101,6 +101,9 @@ export default function Dashboard() {
                 }`}
               >
                 <div className="flex items-center gap-3">
+                  <span className={`text-sm font-medium w-6 text-right shrink-0 ${debt ? 'text-red-400' : 'text-gray-300'}`}>
+                    {index + 1}.
+                  </span>
                   {debt ? (
                     <AlertCircle size={18} className="text-red-500 shrink-0" />
                   ) : (
