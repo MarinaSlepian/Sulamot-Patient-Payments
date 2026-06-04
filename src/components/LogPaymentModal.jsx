@@ -67,6 +67,8 @@ export default function LogPaymentModal({ patientId, onClose }) {
               >
                 <option value="cash">Cash</option>
                 <option value="transfer">Transfer</option>
+                <option value="bit">Bit</option>
+                <option value="paybox">PayBox</option>
                 <option value="check">Check</option>
                 <option value="other">Other</option>
               </select>

@@ -3,7 +3,7 @@ import { useStoreContext } from '../context/StoreContext'
 import { Trash2 } from 'lucide-react'
 import { format } from 'date-fns'
 
-const METHOD_LABELS = { cash: 'Cash', transfer: 'Transfer', check: 'Check', other: 'Other' }
+const METHOD_LABELS = { cash: 'Cash', transfer: 'Transfer', bit: 'Bit', paybox: 'PayBox', check: 'Check', other: 'Other' }
 
 export default function PaymentHistory({ patientId }) {
   const { payments, deletePayment } = useStoreContext()
