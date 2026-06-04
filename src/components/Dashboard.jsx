@@ -90,6 +90,7 @@ export default function Dashboard() {
         <div className="space-y-2">
           {rows.map(({ patient, score }, index) => {
             const debt = hasDebt(score)
+            const credit = !debt && score.moneyBalance < 0
             return (
               <Link
                 key={patient.id}
@@ -97,11 +98,13 @@ export default function Dashboard() {
                 className={`flex items-center justify-between px-4 py-3 rounded-xl border transition-colors hover:shadow-sm ${
                   debt
                     ? 'bg-red-50 border-red-200 hover:bg-red-100'
+                    : credit
+                    ? 'bg-green-50 border-green-200 hover:bg-green-100'
                     : 'bg-white border-gray-200 hover:bg-gray-50'
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <span className={`text-sm font-medium w-6 text-right shrink-0 ${debt ? 'text-red-400' : 'text-gray-300'}`}>
+                  <span className={`text-sm font-medium w-6 text-right shrink-0 ${debt ? 'text-red-400' : credit ? 'text-green-400' : 'text-gray-300'}`}>
                     {index + 1}.
                   </span>
                   {debt ? (
@@ -110,7 +113,7 @@ export default function Dashboard() {
                     <CheckCircle size={18} className="text-green-500 shrink-0" />
                   )}
                   <div>
-                    <p className={`font-medium ${debt ? 'text-red-800' : 'text-gray-800'}`}>
+                    <p className={`font-medium ${debt ? 'text-red-800' : credit ? 'text-green-800' : 'text-gray-800'}`}>
                       {patient.name}
                     </p>
                     {patient.phone && (
@@ -121,7 +124,7 @@ export default function Dashboard() {
                 <div className="flex gap-6 text-sm text-right">
                   <div>
                     <p className="text-xs text-gray-400">Sessions</p>
-                    <p className={`font-semibold ${debt ? 'text-red-700' : 'text-gray-700'}`}>
+                    <p className={`font-semibold ${debt ? 'text-red-700' : credit ? 'text-green-700' : 'text-gray-700'}`}>
                       {score.totalHeld} held / {score.totalPaid} paid
                     </p>
                   </div>
