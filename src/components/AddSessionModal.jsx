@@ -6,7 +6,7 @@ const today = () => new Date().toISOString().slice(0, 10)
 
 export default function AddSessionModal({ patientId, onClose }) {
   const { addSession } = useStoreContext()
-  const [form, setForm] = useState({ date: today(), price: '', held: true })
+  const [form, setForm] = useState({ date: today(), price: '300', held: true })
 
   function handleChange(e) {
     const { name, value, type, checked } = e.target

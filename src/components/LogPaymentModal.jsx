@@ -7,9 +7,9 @@ const today = () => new Date().toISOString().slice(0, 10)
 export default function LogPaymentModal({ patientId, onClose }) {
   const { addPayment } = useStoreContext()
   const [form, setForm] = useState({
-    amount: '',
+    amount: '300',
     method: 'cash',
-    sessionsCovered: '',
+    sessionsCovered: '1',
     date: today(),
     note: '',
   })
