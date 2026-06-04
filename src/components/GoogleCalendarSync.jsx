@@ -75,7 +75,7 @@ export default function GoogleCalendarSync({ onClose }) {
         const title = ev.summary ?? ''
         const matchedPatients = patients.filter((p) => {
           const escaped = p.name.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-          return new RegExp(`(?<![\\p{L}\\d])${escaped}(?![\\p{L}\\d])`, 'iu').test(title)
+          return new RegExp(`(?<![\\p{L}\\d&+/\\-])${escaped}(?![\\p{L}\\d&+/\\-])`, 'iu').test(title)
         })
         const date = (ev.start?.date ?? ev.start?.dateTime ?? '').slice(0, 10)
         return matchedPatients.map((p) => {
