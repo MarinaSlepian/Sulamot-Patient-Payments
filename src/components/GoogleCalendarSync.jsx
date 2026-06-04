@@ -125,7 +125,7 @@ export default function GoogleCalendarSync({ onClose }) {
       .map((ev) => ({
         patientId: ev.patientId,
         date: ev.date,
-        price: 0,
+        price: 300,
         held: true,
       }))
     addSessionsBatch(toImport)
@@ -296,7 +296,7 @@ export default function GoogleCalendarSync({ onClose }) {
             <div className="text-center py-8">
               <div className="text-green-500 text-4xl mb-3">✓</div>
               <p className="text-gray-800 font-medium">Sessions imported!</p>
-              <p className="text-sm text-gray-400 mt-1">Prices are set to ₪0 — edit them on each patient's page.</p>
+              <p className="text-sm text-gray-400 mt-1">Prices are set to ₪300 — edit them on each patient's page if needed.</p>
             </div>
           )}
         </div>
