@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useStoreContext } from '../context/StoreContext'
-import { Trash2 } from 'lucide-react'
+import { Trash2, AlertCircle } from 'lucide-react'
 
 export default function PatientForm() {
   const { id } = useParams()
@@ -17,14 +17,20 @@ export default function PatientForm() {
     notes: existing?.notes ?? '',
   })
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [dupError, setDupError] = useState(false)
 
   function handleChange(e) {
+    setDupError(false)
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }))
   }
 
   function handleSubmit(e) {
     e.preventDefault()
     if (!form.name.trim()) return
+    const duplicate = patients.some(
+      (p) => p.name.trim().toLowerCase() === form.name.trim().toLowerCase() && p.id !== id
+    )
+    if (duplicate) { setDupError(true); return }
     if (isEdit) {
       updatePatient(id, form)
       navigate(`/patients/${id}`)
@@ -53,9 +59,15 @@ export default function PatientForm() {
             onChange={handleChange}
             required
             autoFocus
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 ${dupError ? 'border-red-400 focus:ring-red-400' : 'border-gray-300 focus:ring-blue-500'}`}
             placeholder="Patient name"
           />
+          {dupError && (
+            <p className="flex items-center gap-1.5 mt-1.5 text-sm text-red-600">
+              <AlertCircle size={14} />
+              A patient named "{form.name.trim()}" already exists.
+            </p>
+          )}
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
