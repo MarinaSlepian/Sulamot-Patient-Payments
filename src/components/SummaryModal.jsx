@@ -81,36 +81,33 @@ export default function SummaryModal({ onClose }) {
           {rows.length === 0 ? (
             <p className="text-center text-gray-400 py-12 text-sm">No sessions or payments in this period.</p>
           ) : (
-            <table className="w-full text-sm">
+            <table className="w-full text-sm border-collapse border border-gray-200">
               <thead>
-                <tr className="text-left text-xs font-medium text-gray-500 uppercase tracking-wide border-b border-gray-100">
-                  <th className="pb-2 pr-4">Patient</th>
-                  <th className="pb-2 pr-4 text-right">Sessions</th>
-                  <th className="pb-2 pr-4 text-right">Price / session</th>
-                  <th className="pb-2 text-right">Paid</th>
+                <tr className="text-left text-xs font-medium text-gray-500 uppercase tracking-wide bg-gray-50">
+                  <th className="py-2 px-3 border border-gray-200">Patient</th>
+                  <th className="py-2 px-3 text-right border border-gray-200">Sessions</th>
+                  <th className="py-2 px-3 text-right border border-gray-200">Price / session</th>
+                  <th className="py-2 px-3 text-right border border-gray-200">Paid</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
+              <tbody>
                 {rows.map((r) => (
-                  <tr
-                    key={r.name}
-                    className={r.covered ? 'bg-green-50 hover:bg-green-100' : 'bg-red-50 hover:bg-red-100'}
-                  >
-                    <td className={`py-2.5 pr-4 font-medium ${r.covered ? 'text-green-800' : 'text-red-800'}`}>{r.name}</td>
-                    <td className={`py-2.5 pr-4 text-right ${r.covered ? 'text-green-700' : 'text-red-700'}`}>{r.sessionCount}</td>
-                    <td className={`py-2.5 pr-4 text-right ${r.covered ? 'text-green-700' : 'text-red-700'}`}>₪{r.sessionPrice.toLocaleString()}</td>
-                    <td className={`py-2.5 text-right ${r.covered ? 'text-green-700' : 'text-red-700'}`}>
+                  <tr key={r.name}>
+                    <td className="py-2.5 px-3 font-medium text-gray-800 border border-gray-200">{r.name}</td>
+                    <td className="py-2.5 px-3 text-right text-gray-700 border border-gray-200">{r.sessionCount}</td>
+                    <td className="py-2.5 px-3 text-right text-gray-700 border border-gray-200">₪{r.sessionPrice.toLocaleString()}</td>
+                    <td className="py-2.5 px-3 text-right text-gray-700 border border-gray-200">
                       {r.paid > 0 ? `₪${r.paid.toLocaleString()}` : '—'}
                     </td>
                   </tr>
                 ))}
               </tbody>
               <tfoot>
-                <tr className="border-t-2 border-gray-200 font-semibold text-gray-800">
-                  <td className="pt-3 pr-4">Total</td>
-                  <td className="pt-3 pr-4 text-right">{totals.sessionCount}</td>
-                  <td className="pt-3 pr-4"></td>
-                  <td className="pt-3 text-right">₪{totals.paid.toLocaleString()}</td>
+                <tr className="bg-gray-50 font-semibold text-gray-800">
+                  <td className="py-2.5 px-3 border border-gray-200">Total</td>
+                  <td className="py-2.5 px-3 text-right border border-gray-200">{totals.sessionCount}</td>
+                  <td className="py-2.5 px-3 border border-gray-200"></td>
+                  <td className="py-2.5 px-3 text-right border border-gray-200">₪{totals.paid.toLocaleString()}</td>
                 </tr>
               </tfoot>
             </table>
