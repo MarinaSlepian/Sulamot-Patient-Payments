@@ -25,11 +25,14 @@ export default function SummaryModal({ onClose }) {
         .filter((pay) => pay.patientId === p.id && pay.date >= from && pay.date <= to)
         .reduce((sum, pay) => sum + (pay.amount ?? 0), 0)
 
+      const price = p.sessionPrice ? parseFloat(p.sessionPrice) : 300
+      const owed = heldSessions.length * price
       return {
         name: p.name,
         sessionCount: heldSessions.length,
-        sessionPrice: p.sessionPrice ? parseFloat(p.sessionPrice) : 300,
+        sessionPrice: price,
         paid: paidInPeriod,
+        covered: paidInPeriod >= owed && heldSessions.length > 0,
       }
     })
     .filter((r) => r.sessionCount > 0 || r.paid > 0)
@@ -89,11 +92,14 @@ export default function SummaryModal({ onClose }) {
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {rows.map((r) => (
-                  <tr key={r.name} className="hover:bg-gray-50">
-                    <td className="py-2.5 pr-4 font-medium text-gray-800">{r.name}</td>
-                    <td className="py-2.5 pr-4 text-right text-gray-700">{r.sessionCount}</td>
-                    <td className="py-2.5 pr-4 text-right text-gray-700">₪{r.sessionPrice.toLocaleString()}</td>
-                    <td className="py-2.5 text-right text-gray-700">
+                  <tr
+                    key={r.name}
+                    className={r.covered ? 'bg-green-50 hover:bg-green-100' : 'bg-red-50 hover:bg-red-100'}
+                  >
+                    <td className={`py-2.5 pr-4 font-medium ${r.covered ? 'text-green-800' : 'text-red-800'}`}>{r.name}</td>
+                    <td className={`py-2.5 pr-4 text-right ${r.covered ? 'text-green-700' : 'text-red-700'}`}>{r.sessionCount}</td>
+                    <td className={`py-2.5 pr-4 text-right ${r.covered ? 'text-green-700' : 'text-red-700'}`}>₪{r.sessionPrice.toLocaleString()}</td>
+                    <td className={`py-2.5 text-right ${r.covered ? 'text-green-700' : 'text-red-700'}`}>
                       {r.paid > 0 ? `₪${r.paid.toLocaleString()}` : '—'}
                     </td>
                   </tr>
