@@ -80,7 +80,7 @@ export default function PatientPage() {
         <LogPaymentModal patientId={id} onClose={() => setShowPayment(false)} />
       )}
       {showAddSession && (
-        <AddSessionModal patientId={id} onClose={() => setShowAddSession(false)} />
+        <AddSessionModal patientId={id} defaultPrice={patient.sessionPrice} onClose={() => setShowAddSession(false)} />
       )}
     </div>
   )

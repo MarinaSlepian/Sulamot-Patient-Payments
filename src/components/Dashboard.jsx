@@ -1,13 +1,15 @@
 import { useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { UserPlus, Download, Upload, Calendar, AlertCircle, CheckCircle } from 'lucide-react'
+import { UserPlus, Download, Upload, Calendar, AlertCircle, CheckCircle, BarChart2 } from 'lucide-react'
 import { useStoreContext } from '../context/StoreContext'
 import { calcScoreboard } from '../utils/calculations'
 import GoogleCalendarSync from './GoogleCalendarSync'
+import SummaryModal from './SummaryModal'
 
 export default function Dashboard() {
   const { patients, sessions, payments, exportData, importData } = useStoreContext()
   const [showSync, setShowSync] = useState(false)
+  const [showSummary, setShowSummary] = useState(false)
   const [importMsg, setImportMsg] = useState(null)
   const fileRef = useRef()
 
@@ -40,6 +42,13 @@ export default function Dashboard() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Patients</h1>
         <div className="flex gap-2 flex-wrap justify-end">
+          <button
+            onClick={() => setShowSummary(true)}
+            className="flex items-center gap-1.5 px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700"
+          >
+            <BarChart2 size={15} />
+            Summary
+          </button>
           <button
             onClick={() => setShowSync(true)}
             className="flex items-center gap-1.5 px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700"
@@ -148,6 +157,7 @@ export default function Dashboard() {
       )}
 
       {showSync && <GoogleCalendarSync onClose={() => setShowSync(false)} />}
+      {showSummary && <SummaryModal onClose={() => setShowSummary(false)} />}
     </div>
   )
 }

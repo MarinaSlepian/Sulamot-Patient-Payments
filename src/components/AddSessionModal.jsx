@@ -4,9 +4,9 @@ import { useStoreContext } from '../context/StoreContext'
 
 const today = () => new Date().toISOString().slice(0, 10)
 
-export default function AddSessionModal({ patientId, onClose }) {
+export default function AddSessionModal({ patientId, defaultPrice, onClose }) {
   const { addSession } = useStoreContext()
-  const [form, setForm] = useState({ date: today(), price: '300', held: true })
+  const [form, setForm] = useState({ date: today(), price: String(defaultPrice ?? 300), held: true })
 
   function handleChange(e) {
     const { name, value, type, checked } = e.target
