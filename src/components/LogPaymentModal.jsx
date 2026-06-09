@@ -4,10 +4,10 @@ import { useStoreContext } from '../context/StoreContext'
 
 const today = () => new Date().toISOString().slice(0, 10)
 
-export default function LogPaymentModal({ patientId, onClose }) {
+export default function LogPaymentModal({ patientId, sessionPrice, onClose }) {
   const { addPayment } = useStoreContext()
   const [form, setForm] = useState({
-    amount: '300',
+    amount: sessionPrice ? String(parseFloat(sessionPrice)) : '300',
     method: 'cash',
     sessionsCovered: '1',
     date: today(),

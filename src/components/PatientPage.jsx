@@ -77,7 +77,7 @@ export default function PatientPage() {
       <PaymentHistory patientId={id} />
 
       {showPayment && (
-        <LogPaymentModal patientId={id} onClose={() => setShowPayment(false)} />
+        <LogPaymentModal patientId={id} sessionPrice={patient.sessionPrice} onClose={() => setShowPayment(false)} />
       )}
       {showAddSession && (
         <AddSessionModal patientId={id} defaultPrice={patient.sessionPrice} onClose={() => setShowAddSession(false)} />

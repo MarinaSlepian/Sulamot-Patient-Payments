@@ -27,11 +27,14 @@ export default function SummaryModal({ onClose }) {
 
       const price = p.sessionPrice ? parseFloat(p.sessionPrice) : 300
       const owed = heldSessions.length * price
+      const debt = Math.max(0, owed - paidInPeriod)
       return {
         name: p.name,
         sessionCount: heldSessions.length,
         sessionPrice: price,
+        owed,
         paid: paidInPeriod,
+        debt,
         covered: paidInPeriod >= owed && heldSessions.length > 0,
       }
     })
@@ -42,8 +45,9 @@ export default function SummaryModal({ onClose }) {
     (acc, r) => ({
       sessionCount: acc.sessionCount + r.sessionCount,
       paid: acc.paid + r.paid,
+      debt: acc.debt + r.debt,
     }),
-    { sessionCount: 0, paid: 0 }
+    { sessionCount: 0, paid: 0, debt: 0 }
   )
 
   return (
@@ -88,16 +92,20 @@ export default function SummaryModal({ onClose }) {
                   <th className="py-2 px-3 text-right border border-gray-200">Sessions</th>
                   <th className="py-2 px-3 text-right border border-gray-200">Price / session</th>
                   <th className="py-2 px-3 text-right border border-gray-200">Paid</th>
+                  <th className="py-2 px-3 text-right border border-gray-200">Debt</th>
                 </tr>
               </thead>
               <tbody>
                 {rows.map((r) => (
-                  <tr key={r.name}>
+                  <tr key={r.name} className={r.debt > 0 ? 'bg-red-50' : ''}>
                     <td className="py-2.5 px-3 font-medium text-gray-800 border border-gray-200">{r.name}</td>
                     <td className="py-2.5 px-3 text-right text-gray-700 border border-gray-200">{r.sessionCount}</td>
                     <td className="py-2.5 px-3 text-right text-gray-700 border border-gray-200">₪{r.sessionPrice.toLocaleString()}</td>
                     <td className="py-2.5 px-3 text-right text-gray-700 border border-gray-200">
                       {r.paid > 0 ? `₪${r.paid.toLocaleString()}` : '—'}
+                    </td>
+                    <td className="py-2.5 px-3 text-right font-medium border border-gray-200">
+                      {r.debt > 0 ? <span className="text-red-600">₪{r.debt.toLocaleString()}</span> : <span className="text-green-600">✓</span>}
                     </td>
                   </tr>
                 ))}
@@ -108,6 +116,9 @@ export default function SummaryModal({ onClose }) {
                   <td className="py-2.5 px-3 text-right border border-gray-200">{totals.sessionCount}</td>
                   <td className="py-2.5 px-3 border border-gray-200"></td>
                   <td className="py-2.5 px-3 text-right border border-gray-200">₪{totals.paid.toLocaleString()}</td>
+                  <td className="py-2.5 px-3 text-right border border-gray-200">
+                    {totals.debt > 0 ? <span className="text-red-600">₪{totals.debt.toLocaleString()}</span> : <span className="text-green-600">✓</span>}
+                  </td>
                 </tr>
               </tfoot>
             </table>
