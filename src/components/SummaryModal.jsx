@@ -44,10 +44,11 @@ export default function SummaryModal({ onClose }) {
   const totals = rows.reduce(
     (acc, r) => ({
       sessionCount: acc.sessionCount + r.sessionCount,
+      owed: acc.owed + r.owed,
       paid: acc.paid + r.paid,
       debt: acc.debt + r.debt,
     }),
-    { sessionCount: 0, paid: 0, debt: 0 }
+    { sessionCount: 0, owed: 0, paid: 0, debt: 0 }
   )
 
   return (
@@ -91,6 +92,7 @@ export default function SummaryModal({ onClose }) {
                   <th className="py-2 px-3 border border-gray-200">Patient</th>
                   <th className="py-2 px-3 text-right border border-gray-200">Sessions</th>
                   <th className="py-2 px-3 text-right border border-gray-200">Price / session</th>
+                  <th className="py-2 px-3 text-right border border-gray-200">Owed</th>
                   <th className="py-2 px-3 text-right border border-gray-200">Paid</th>
                   <th className="py-2 px-3 text-right border border-gray-200">Debt</th>
                 </tr>
@@ -101,6 +103,7 @@ export default function SummaryModal({ onClose }) {
                     <td className="py-2.5 px-3 font-medium text-gray-800 border border-gray-200">{r.name}</td>
                     <td className="py-2.5 px-3 text-right text-gray-700 border border-gray-200">{r.sessionCount}</td>
                     <td className="py-2.5 px-3 text-right text-gray-700 border border-gray-200">₪{r.sessionPrice.toLocaleString()}</td>
+                    <td className="py-2.5 px-3 text-right text-gray-700 border border-gray-200">₪{r.owed.toLocaleString()}</td>
                     <td className="py-2.5 px-3 text-right text-gray-700 border border-gray-200">
                       {r.paid > 0 ? `₪${r.paid.toLocaleString()}` : '—'}
                     </td>
@@ -115,6 +118,7 @@ export default function SummaryModal({ onClose }) {
                   <td className="py-2.5 px-3 border border-gray-200">Total</td>
                   <td className="py-2.5 px-3 text-right border border-gray-200">{totals.sessionCount}</td>
                   <td className="py-2.5 px-3 border border-gray-200"></td>
+                  <td className="py-2.5 px-3 text-right border border-gray-200">₪{totals.owed.toLocaleString()}</td>
                   <td className="py-2.5 px-3 text-right border border-gray-200">₪{totals.paid.toLocaleString()}</td>
                   <td className="py-2.5 px-3 text-right border border-gray-200">
                     {totals.debt > 0 ? <span className="text-red-600">₪{totals.debt.toLocaleString()}</span> : <span className="text-green-600">✓</span>}
