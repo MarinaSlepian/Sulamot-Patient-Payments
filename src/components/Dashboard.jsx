@@ -9,6 +9,7 @@ import SummaryModal from './SummaryModal'
 export default function Dashboard() {
   const { patients, sessions, payments, exportData, importData } = useStoreContext()
   const [showSync, setShowSync] = useState(false)
+  const [showSyncDay, setShowSyncDay] = useState(false)
   const [showSummary, setShowSummary] = useState(false)
   const [importMsg, setImportMsg] = useState(null)
   const fileRef = useRef()
@@ -48,6 +49,13 @@ export default function Dashboard() {
           >
             <BarChart2 size={15} />
             Summary
+          </button>
+          <button
+            onClick={() => setShowSyncDay(true)}
+            className="flex items-center gap-1.5 px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700"
+          >
+            <Calendar size={15} />
+            Sync Day
           </button>
           <button
             onClick={() => setShowSync(true)}
@@ -156,6 +164,7 @@ export default function Dashboard() {
         </div>
       )}
 
+      {showSyncDay && <GoogleCalendarSync mode="day" onClose={() => setShowSyncDay(false)} />}
       {showSync && <GoogleCalendarSync onClose={() => setShowSync(false)} />}
       {showSummary && <SummaryModal onClose={() => setShowSummary(false)} />}
     </div>

@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { X, Calendar, AlertCircle, Loader, Trash2 } from 'lucide-react'
 import { useStoreContext } from '../context/StoreContext'
 import { storage } from '../utils/storage'
-import { format, startOfWeek, endOfWeek, addWeeks } from 'date-fns'
+import { format, startOfWeek, endOfWeek, addWeeks, addDays } from 'date-fns'
 
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
 const SCOPES = 'https://www.googleapis.com/auth/calendar.readonly'
@@ -14,10 +14,18 @@ function getWeekRange(offset = 0) {
   return { start, end }
 }
 
-export default function GoogleCalendarSync({ onClose }) {
+function getDayRange(offset = 0) {
+  const day = addDays(new Date(), offset)
+  day.setHours(0, 0, 0, 0)
+  const end = new Date(day)
+  end.setHours(23, 59, 59, 999)
+  return { start: day, end }
+}
+
+export default function GoogleCalendarSync({ onClose, mode = 'week' }) {
   const { patients, sessions, addSessionsBatch, deleteSessionsBatch } = useStoreContext()
   const [step, setStep] = useState('pick') // pick | loading | preview | done
-  const [weekOffset, setWeekOffset] = useState(0)
+  const [rangeOffset, setRangeOffset] = useState(0)
   const [token, setToken] = useState(() => storage.getGoogleToken()?.access_token ?? null)
   const [events, setEvents] = useState([])
   const [selected, setSelected] = useState({})
@@ -25,7 +33,7 @@ export default function GoogleCalendarSync({ onClose }) {
   const [importing, setImporting] = useState(false)
   const [confirmClear, setConfirmClear] = useState(false)
 
-  const { start, end } = getWeekRange(weekOffset)
+  const { start, end } = mode === 'day' ? getDayRange(rangeOffset) : getWeekRange(rangeOffset)
 
   async function signIn() {
     return new Promise((resolve, reject) => {
@@ -97,10 +105,10 @@ export default function GoogleCalendarSync({ onClose }) {
     }
   }
 
-  const sessionsInWeek = sessions.filter((s) => s.date >= start.toISOString().slice(0, 10) && s.date <= end.toISOString().slice(0, 10))
+  const sessionsInRange = sessions.filter((s) => s.date >= start.toISOString().slice(0, 10) && s.date <= end.toISOString().slice(0, 10))
 
-  function handleClearWeek() {
-    deleteSessionsBatch(sessionsInWeek.map((s) => s.id))
+  function handleClearRange() {
+    deleteSessionsBatch(sessionsInRange.map((s) => s.id))
     setConfirmClear(false)
   }
 
@@ -139,7 +147,7 @@ export default function GoogleCalendarSync({ onClose }) {
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0">
           <div className="flex items-center gap-2">
             <Calendar size={18} className="text-blue-600" />
-            <h2 className="text-lg font-semibold text-gray-800">Sync from Google Calendar</h2>
+            <h2 className="text-lg font-semibold text-gray-800">{mode === 'day' ? 'Sync Day from Google Calendar' : 'Sync from Google Calendar'}</h2>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
         </div>
@@ -148,23 +156,23 @@ export default function GoogleCalendarSync({ onClose }) {
           {step === 'pick' && (
             <div className="space-y-4">
               <p className="text-sm text-gray-600">
-                Fetch events from your Google Calendar for a specific week. Events whose titles contain a patient's name will be imported as sessions.
+                Fetch events from your Google Calendar for a specific {mode === 'day' ? 'day' : 'week'}. Events whose titles contain a patient's name will be imported as sessions.
               </p>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Select week</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Select {mode === 'day' ? 'day' : 'week'}</label>
                 <div className="flex items-center gap-3">
                   <button
-                    onClick={() => setWeekOffset((o) => o - 1)}
+                    onClick={() => setRangeOffset((o) => o - 1)}
                     className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm hover:bg-gray-50"
                   >
                     ← Prev
                   </button>
                   <span className="text-sm text-gray-700 min-w-[180px] text-center">
-                    {format(start, 'MMM d')} – {format(end, 'MMM d, yyyy')}
+                    {mode === 'day' ? format(start, 'MMM d, yyyy') : `${format(start, 'MMM d')} – ${format(end, 'MMM d, yyyy')}`}
                   </span>
                   <button
-                    onClick={() => setWeekOffset((o) => o + 1)}
+                    onClick={() => setRangeOffset((o) => o + 1)}
                     className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm hover:bg-gray-50"
                   >
                     Next →
@@ -197,20 +205,20 @@ export default function GoogleCalendarSync({ onClose }) {
                 {!confirmClear ? (
                   <button
                     onClick={() => setConfirmClear(true)}
-                    disabled={sessionsInWeek.length === 0}
+                    disabled={sessionsInRange.length === 0}
                     className="flex items-center gap-1.5 text-sm text-red-500 hover:text-red-700 disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     <Trash2 size={14} />
-                    Clear week
-                    {sessionsInWeek.length > 0 && <span className="text-red-400">({sessionsInWeek.length} session{sessionsInWeek.length !== 1 ? 's' : ''})</span>}
+                    Clear {mode === 'day' ? 'day' : 'week'}
+                    {sessionsInRange.length > 0 && <span className="text-red-400">({sessionsInRange.length} session{sessionsInRange.length !== 1 ? 's' : ''})</span>}
                   </button>
                 ) : (
                   <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm">
                     <p className="text-red-800 font-medium mb-2">
-                      Delete all {sessionsInWeek.length} session{sessionsInWeek.length !== 1 ? 's' : ''} for {format(start, 'MMM d')}–{format(end, 'MMM d')}?
+                      Delete all {sessionsInRange.length} session{sessionsInRange.length !== 1 ? 's' : ''} for {mode === 'day' ? format(start, 'MMM d, yyyy') : `${format(start, 'MMM d')}–${format(end, 'MMM d')}`}?
                     </p>
                     <div className="flex gap-2">
-                      <button onClick={handleClearWeek} className="px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 text-xs font-medium">
+                      <button onClick={handleClearRange} className="px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 text-xs font-medium">
                         Yes, clear
                       </button>
                       <button onClick={() => setConfirmClear(false)} className="px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-gray-50 text-xs">
@@ -248,7 +256,7 @@ export default function GoogleCalendarSync({ onClose }) {
                   <p className="text-sm text-gray-600">
                     Found <strong>{newCount} new</strong> event{newCount !== 1 ? 's' : ''}
                     {dupCount > 0 && <> and <span className="text-amber-600 font-medium">{dupCount} already imported</span></>}
-                    {' '}for {format(start, 'MMM d')}–{format(end, 'MMM d')}.
+                    {' '}for {mode === 'day' ? format(start, 'MMM d, yyyy') : `${format(start, 'MMM d')}–${format(end, 'MMM d')}`}.
                   </p>
                 )
               })()}
