@@ -37,7 +37,7 @@ export default function PatientPage() {
           <div className="flex items-center gap-2 mb-1">
             <Link to="/" className="text-sm text-gray-400 hover:text-gray-600">← Patients</Link>
           </div>
-          <h1 className="text-2xl font-bold text-gray-800">{patient.name}</h1>
+          <h1 className={`text-2xl font-bold ${patient.notes?.includes('חודשי') ? 'text-blue-600' : 'text-gray-800'}`}>{patient.name}</h1>
           {patient.phone && <p className="text-sm text-gray-400 mt-0.5">{patient.phone}</p>}
           {patient.notes && <p className="text-sm text-gray-500 mt-1">{patient.notes}</p>}
         </div>

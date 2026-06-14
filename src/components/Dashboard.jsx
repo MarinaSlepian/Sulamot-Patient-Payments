@@ -130,7 +130,7 @@ export default function Dashboard() {
                     <CheckCircle size={18} className="text-green-500 shrink-0" />
                   )}
                   <div>
-                    <p className={`font-medium ${debt ? 'text-red-800' : credit ? 'text-green-800' : 'text-gray-800'}`}>
+                    <p className={`font-medium ${patient.notes?.includes('חודשי') ? 'text-blue-600' : debt ? 'text-red-800' : credit ? 'text-green-800' : 'text-gray-800'}`}>
                       {patient.name}
                     </p>
                     {patient.phone && (
