@@ -15,7 +15,15 @@ export default function LogPaymentModal({ patientId, sessionPrice, onClose }) {
   })
 
   function handleChange(e) {
-    setForm((f) => ({ ...f, [e.target.name]: e.target.value }))
+    const { name, value } = e.target
+    if (name === 'sessionsCovered') {
+      const n = parseInt(value)
+      const price = parseFloat(sessionPrice) || 0
+      const auto = !isNaN(n) && n > 0 ? String(n * price) : form.amount
+      setForm((f) => ({ ...f, sessionsCovered: value, amount: auto }))
+    } else {
+      setForm((f) => ({ ...f, [name]: value }))
+    }
   }
 
   function handleSubmit(e) {
