@@ -16,6 +16,7 @@ export default function PatientForm() {
     phone: existing?.phone ?? '',
     notes: existing?.notes ?? '',
     sessionPrice: existing?.sessionPrice ?? '300',
+    active: existing?.active ?? true,
   })
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [dupError, setDupError] = useState(false)
@@ -92,6 +93,18 @@ export default function PatientForm() {
             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="300"
           />
+        </div>
+        <div>
+          <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+            <input
+              type="checkbox"
+              name="active"
+              checked={form.active}
+              onChange={(e) => setForm((f) => ({ ...f, active: e.target.checked }))}
+              className="rounded border-gray-300 focus:ring-blue-500"
+            />
+            Active
+          </label>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>

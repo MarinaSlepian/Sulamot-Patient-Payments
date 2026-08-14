@@ -11,12 +11,19 @@ export default function Dashboard() {
   const [showSync, setShowSync] = useState(false)
   const [showSyncDay, setShowSyncDay] = useState(false)
   const [showSummary, setShowSummary] = useState(false)
+  const [showInactive, setShowInactive] = useState(false)
   const [importMsg, setImportMsg] = useState(null)
   const fileRef = useRef()
 
+  const inactiveCount = patients.filter((p) => p.active === false).length
+
   const rows = patients
+    .filter((p) => showInactive || p.active !== false)
     .map((p) => ({ patient: p, score: calcScoreboard(p.id, sessions, payments) }))
     .sort((a, b) => {
+      const aInactive = a.patient.active === false ? 1 : 0
+      const bInactive = b.patient.active === false ? 1 : 0
+      if (aInactive !== bInactive) return aInactive - bInactive
       const aDebt = a.score.sessionsInDebt > 0 || a.score.moneyBalance > 0 ? 1 : 0
       const bDebt = b.score.sessionsInDebt > 0 || b.score.moneyBalance > 0 ? 1 : 0
       if (bDebt !== aDebt) return bDebt - aDebt
@@ -43,6 +50,14 @@ export default function Dashboard() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Patients</h1>
         <div className="flex gap-2 flex-wrap justify-end">
+          {inactiveCount > 0 && (
+            <button
+              onClick={() => setShowInactive((v) => !v)}
+              className="flex items-center gap-1.5 px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700"
+            >
+              {showInactive ? `Hide inactive (${inactiveCount})` : `Show inactive (${inactiveCount})`}
+            </button>
+          )}
           <button
             onClick={() => setShowSummary(true)}
             className="flex items-center gap-1.5 px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700"
@@ -108,12 +123,15 @@ export default function Dashboard() {
           {rows.map(({ patient, score }, index) => {
             const debt = hasDebt(score)
             const credit = !debt && score.moneyBalance < 0
+            const inactive = patient.active === false
             return (
               <Link
                 key={patient.id}
                 to={`/patients/${patient.id}`}
                 className={`flex items-center justify-between px-4 py-3 rounded-xl border transition-colors hover:shadow-sm ${
-                  debt
+                  inactive
+                    ? 'bg-gray-100 border-gray-200 hover:bg-gray-200'
+                    : debt
                     ? 'bg-red-50 border-red-200 hover:bg-red-100'
                     : credit
                     ? 'bg-green-50 border-green-200 hover:bg-green-100'
@@ -121,17 +139,22 @@ export default function Dashboard() {
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <span className={`text-sm font-medium w-6 text-right shrink-0 ${debt ? 'text-red-400' : credit ? 'text-green-400' : 'text-gray-300'}`}>
+                  <span className={`text-sm font-medium w-6 text-right shrink-0 ${inactive ? 'text-gray-300' : debt ? 'text-red-400' : credit ? 'text-green-400' : 'text-gray-300'}`}>
                     {index + 1}.
                   </span>
-                  {debt ? (
+                  {inactive ? (
+                    <CheckCircle size={18} className="text-gray-400 shrink-0" />
+                  ) : debt ? (
                     <AlertCircle size={18} className="text-red-500 shrink-0" />
                   ) : (
                     <CheckCircle size={18} className="text-green-500 shrink-0" />
                   )}
                   <div>
-                    <p className={`font-medium ${patient.notes?.includes('חודשי') ? 'text-blue-600' : debt ? 'text-red-800' : credit ? 'text-green-800' : 'text-gray-800'}`}>
+                    <p className={`font-medium flex items-center gap-1.5 ${inactive ? 'text-gray-500' : patient.notes?.includes('חודשי') ? 'text-blue-600' : debt ? 'text-red-800' : credit ? 'text-green-800' : 'text-gray-800'}`}>
                       {patient.name}
+                      {inactive && (
+                        <span className="text-xs font-medium px-1.5 py-0.5 rounded-full bg-gray-200 text-gray-500">Inactive</span>
+                      )}
                     </p>
                     {patient.phone && (
                       <p className="text-xs text-gray-400">{patient.phone}</p>
@@ -141,20 +164,20 @@ export default function Dashboard() {
                 <div className="flex gap-6 text-sm text-right">
                   <div>
                     <p className="text-xs text-gray-400">Sessions</p>
-                    <p className={`font-semibold ${debt ? 'text-red-700' : credit ? 'text-green-700' : 'text-gray-700'}`}>
+                    <p className={`font-semibold ${inactive ? 'text-gray-500' : debt ? 'text-red-700' : credit ? 'text-green-700' : 'text-gray-700'}`}>
                       {score.totalHeld} held / {score.totalPaid} paid
                     </p>
                   </div>
                   <div>
                     <p className="text-xs text-gray-400">Balance</p>
-                    <p className={`font-semibold ${score.moneyBalance > 0 ? 'text-red-700' : 'text-green-700'}`}>
+                    <p className={`font-semibold ${inactive ? 'text-gray-500' : score.moneyBalance > 0 ? 'text-red-700' : 'text-green-700'}`}>
                       {score.moneyBalance > 0 ? `₪${score.moneyBalance.toLocaleString()} owed` : score.moneyBalance < 0 ? `₪${Math.abs(score.moneyBalance).toLocaleString()} credit` : 'Settled'}
                     </p>
                   </div>
                   {score.sessionsInDebt > 0 && (
                     <div>
                       <p className="text-xs text-gray-400">Debt</p>
-                      <p className="font-semibold text-red-700">{score.sessionsInDebt} session{score.sessionsInDebt !== 1 ? 's' : ''}</p>
+                      <p className={`font-semibold ${inactive ? 'text-gray-500' : 'text-red-700'}`}>{score.sessionsInDebt} session{score.sessionsInDebt !== 1 ? 's' : ''}</p>
                     </div>
                   )}
                 </div>
