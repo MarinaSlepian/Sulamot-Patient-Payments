@@ -130,12 +130,16 @@ export default function GoogleCalendarSync({ onClose, mode = 'week' }) {
     setImporting(true)
     const toImport = events
       .filter((_, i) => selected[i])
-      .map((ev) => ({
-        patientId: ev.patientId,
-        date: ev.date,
-        price: 300,
-        held: true,
-      }))
+      .map((ev) => {
+        const patient = patients.find((p) => p.id === ev.patientId)
+        const price = patient?.sessionPrice ? parseFloat(patient.sessionPrice) : 300
+        return {
+          patientId: ev.patientId,
+          date: ev.date,
+          price,
+          held: true,
+        }
+      })
     addSessionsBatch(toImport)
     setStep('done')
     setImporting(false)
@@ -304,7 +308,7 @@ export default function GoogleCalendarSync({ onClose, mode = 'week' }) {
             <div className="text-center py-8">
               <div className="text-green-500 text-4xl mb-3">✓</div>
               <p className="text-gray-800 font-medium">Sessions imported!</p>
-              <p className="text-sm text-gray-400 mt-1">Prices are set to ₪300 — edit them on each patient's page if needed.</p>
+              <p className="text-sm text-gray-400 mt-1">Prices are set to each patient's session price — edit them on each patient's page if needed.</p>
             </div>
           )}
         </div>
